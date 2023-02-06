@@ -1,5 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
-from ds1 import PatchDataset
+from dataset import PatchDataset
 import torch, argparse, os
 import numpy as np
 import pandas as pd 
