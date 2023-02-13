@@ -12,6 +12,7 @@ import sys
 parser = argparse.ArgumentParser(description='Bragg peak finding for HEDM.')
 parser.add_argument('-ge_ffile', type=str, required=True, help='frame ge3 file')
 parser.add_argument('-ge_dfile', type=str, required=True, help='frame ge3 file')
+parser.add_argument('-n_frames', type=int, default=1440,  help='number of frames')
 parser.add_argument('-fcsz',   type=s2ituple, default='16_8_4_2', help='size of dense layers')
 parser.add_argument('-psz',    type=int, default=15, help='working patch size')
 parser.add_argument('-lr',     type=float,default=3e-4, help='learning rate')
@@ -30,7 +31,7 @@ def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create an instance of the PatchDataset class
-    dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=1)
+    dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=args.n_frames)
 
     #initiate 0.8/0.2 split for train/val sets
     train_size = int(0.8 * len(dataset))
