@@ -10,8 +10,8 @@ import time
 import sys 
 
 parser = argparse.ArgumentParser(description='Bragg peak finding for HEDM.')
-parser.add_argument('-ge_ffile', type=str, default="debug", help='frame ge3 file')
-parser.add_argument('-ge_dfile', type=str, default="debug", help='frame ge3 file')
+parser.add_argument('-ge_ffile', type=str, required=True, help='frame ge3 file')
+parser.add_argument('-ge_dfile', type=str, required=True, help='frame ge3 file')
 parser.add_argument('-fcsz',   type=s2ituple, default='16_8_4_2', help='size of dense layers')
 parser.add_argument('-psz',    type=int, default=15, help='working patch size')
 parser.add_argument('-lr',     type=float,default=3e-4, help='learning rate')
