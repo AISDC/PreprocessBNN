@@ -1,12 +1,19 @@
 import os 
 import h5py 
-import torch
 import numpy as np
+import torch 
 from numba import jit
 from skimage import measure
 from torchvision import transforms
 from torch.utils.data import Dataset
 from skimage.measure import label, regionprops
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if device.type == 'cpu':
+    model=torch.load("m_file.pt",map_location=torch.device('cpu'))
+else: 
+    model=torch.load("m_file.pt")
+model.eval()
 
 @jit
 def process_frame(frame, dark, thresh):
@@ -21,7 +28,16 @@ def normalize_patch(patch):
     feature   = (patch - _min) / (_max- _min) 
     return feature
 
-
+def inference(patch): 
+    patch = torch.from_numpy(patch)
+    with torch.no_grad():
+        patch = patch.float()
+        patch = torch.reshape(patch,(1,1,15,15))
+                                                                                             
+        y_pred = model(patch)
+        y_pred = y_pred.cpu().numpy()*15
+    return y_pred  
+                                                                                                 
 class PatchDataset(Dataset): 
     def __init__(self, ffile, dfile, nFrames, NrPixels=2048, thresh=100, fHead=8192, window=7):
         self.NrPixels = NrPixels
@@ -41,6 +57,7 @@ class PatchDataset(Dataset):
         self.patches=[]
         self.f_nums=[]
         self.p_nums=[]
+        self.bnn_peak_centers=[]
         with open(ffile, 'rb') as f:
             for fNr in range(1,nFrames+1):
                 BytesToSkip = fHead + fNr*NrPixels*NrPixels*2
@@ -66,6 +83,7 @@ class PatchDataset(Dataset):
                         continue
                     sub_img = thisFrame[start_y:end_y,start_x:end_x]
                     self.patches.append(normalize_patch(sub_img))
+                    self.bnn_peak_centers.append(inference(normalize_patch(sub_img)))
                     self.xy_positions.append([start_y,start_x])
                     self.f_nums.append(fNr)
                     self.p_nums.append(i)
@@ -77,5 +95,5 @@ class PatchDataset(Dataset):
         return self.length
 
     def __getitem__(self, index):
-        return self.patches[index], self.xy_positions[index], self.f_nums[index], self.p_nums[index]  
+        return self.patches[index], self.bnn_peak_centers[index] #, self.xy_positions[index], self.bnn_peak_centers, self.f_nums[index], self.p_nums[index]  
 
