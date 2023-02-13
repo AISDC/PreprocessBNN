@@ -56,22 +56,22 @@ def main(args):
     time_on_training = 0
 
     train_loss = []
-    valid_loss = [] 
+    valid_loss = []
     for epoch in range(args.maxep):
         ep_tick = time.time()
         time_comp = 0
+        loss = 0.0 
         for X_mb, y_mb in dl_train:
             X_mb = X_mb.float()
             y_mb = torch.reshape(y_mb,(args.mbsz,2))
             X_mb = torch.reshape(X_mb, (args.mbsz, 1, args.psz, args.psz))
             it_comp_tick = time.time()
 
-            loss = 0.0 
-            pred = model.forward(X_mb.to(device))
-            loss += criterion(pred, y_mb.to(device))
-            loss.backward()
-            optimizer.step() 
             optimizer.zero_grad()
+            pred = model.forward(X_mb.to(device))
+            loss = criterion(pred, y_mb.to(device))
+            loss.backward()
+            optimizer.step()
             time_comp += 1000 * (time.time() - it_comp_tick)
         train_loss.append(loss.item())
 
