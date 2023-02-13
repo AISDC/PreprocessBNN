@@ -29,6 +29,8 @@ def main(args):
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    print(device)
 
     # Create an instance of the PatchDataset class
     dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=args.n_frames)
