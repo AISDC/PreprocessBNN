@@ -20,7 +20,7 @@ def main(args):
     model.eval()
 
     # Create an instance of the PatchDataset class
-    dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=1440)
+    dataset = PatchDatasetInfer(args.ge_ffile, args.ge_dfile, nFrames=1440)
     
     # Create a dataloader with a batch_size of 1
     bs=1 
