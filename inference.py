@@ -1,13 +1,13 @@
 from torch.utils.data import Dataset, DataLoader
-from dataset import PatchDataset
+from dataset import PatchDatasetInfer
 import torch, argparse, os
 import numpy as np
 import pandas as pd 
 
 parser = argparse.ArgumentParser(description='Bragg peak finding for HEDM.')
-parser.add_argument('-ge_ffile', type=str, default="debug", help='frame ge3 file')
-parser.add_argument('-ge_dfile', type=str, default="debug", help='frame ge3 file')
-parser.add_argument('-m_file', type=str, default="debug", help='pt model file')
+parser.add_argument('-ge_ffile', required=True, type=str, help='frame ge3 file')
+parser.add_argument('-ge_dfile', required=True, type=str, help='frame ge3 file')
+parser.add_argument('-m_file',   required=True, type=str, help='pt model file')
 parser.add_argument('-expName',type=str, default="debug", help='Experiment name')
 args, unparsed = parser.parse_known_args()
 
