@@ -30,10 +30,17 @@ def main(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create an instance of the PatchDataset class
-    dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=1)
-    
+    dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=1440)
+
+    #initiate 0.8/0.2 split for train/val sets
+    train_size = int(0.8 * len(dataset))
+    val_size = len(dataset) - train_size
+
+    ds_train,ds_val = torch.utils.data.random_split(dataset, [train_size, val_size])
+
     # Create a dataloader with a batch_size of mbsz
-    dl_train = DataLoader(dataset, batch_size=args.mbsz, shuffle=False)
+    dl_train = DataLoader(ds_train, batch_size=args.mbsz, shuffle=True, drop_last=True)
+    dl_valid = DataLoader(ds_val,   batch_size=args.mbsz, shuffle=True, drop_last=True)
 
     model = BraggNN(imgsz=args.psz, fcsz=args.fcsz)
     _ = model.apply(model_init) # init model weights and bias
@@ -78,17 +85,12 @@ def main(args):
         logging.info('[Train] @ %05d l2-norm of %5d samples: Avg.: %.4f, 50th: %.3f, 75th: %.3f, 95th: %.3f, 99.5th: %.3f (pixels).' % (\
                      (epoch, l2norm_train.shape[0], l2norm_train.mean()) + tuple(np.percentile(l2norm_train, (50, 75, 95, 99.5))) ) )
 
-        
-        torch.save(model.state_dict(), "%s/mdl-it%05d.pth" % (args.exp_name, epoch))
-
-    logging.info("Trained for %3d epoches, each with %d steps (BS=%d) took %.3f seconds" % (\
-                 args.maxep, len(dl_train), args.mbsz, time_on_training*1e-3))
-
-
-'''
         pred_val, gt_val = [], []
         for X_mb_val, y_mb_val in dl_valid:
             with torch.no_grad():
+                X_mb_val = X_mb_val.float()
+                y_mb_val = torch.reshape(y_mb_val,(args.mbsz,2))
+                X_mb_val = torch.reshape(X_mb_val, (args.mbsz, 1, args.psz, args.psz))
                 _pred = model.forward(X_mb_val.to(device))
                 pred_val.append(_pred.cpu().numpy())
                 gt_val.append(y_mb_val.numpy())
@@ -98,7 +100,13 @@ def main(args):
         
         logging.info('[Valid] @ %05d l2-norm of %5d samples: Avg.: %.4f, 50th: %.3f, 75th: %.3f, 95th: %.3f, 99.5th: %.3f (pixels) \n' % (\
                     (epoch, l2norm_val.shape[0], l2norm_val.mean()) + tuple(np.percentile(l2norm_val, (50, 75, 95, 99.5))) ) )
-'''
+        
+        torch.save(model.state_dict(), "%s/mdl-it%05d.pth" % (args.exp_name, epoch))
+
+    logging.info("Trained for %3d epoches, each with %d steps (BS=%d) took %.3f seconds" % (\
+                 args.maxep, len(dl_train), args.mbsz, time_on_training*1e-3))
+
+
 
 if __name__ == "__main__":
     main(args)
