@@ -24,9 +24,8 @@ def main(args):
     # Create an instance of the PatchDataset class
     dataset = PatchDataset(args.ge_ffile, args.ge_dfile, nFrames=1440)
     
-    # Create a dataloader with a batch_size of 1
-    bs=2
-    dl_train = DataLoader(dataset, batch_size=bs, shuffle=False)
+    # Create a dataloader with a batch_size of mbsz
+    dl_train = DataLoader(dataset, batch_size=args.mbsz, shuffle=False)
 
     model = BraggNN(imgsz=args.psz, fcsz=args.fcsz)
     _ = model.apply(model_init) # init model weights and bias
@@ -45,8 +44,8 @@ def main(args):
         time_comp = 0
         for X_mb, y_mb in dl_train:
             X_mb = X_mb.float()
-            y_mb = torch.reshape(y_mb,(2,2))
-            X_mb = torch.reshape(X_mb, (bs, 1, args.psz, args.psz))
+            y_mb = torch.reshape(y_mb,(args.mbsz,2))
+            X_mb = torch.reshape(X_mb, (args.mbsz, 1, args.psz, args.psz))
             it_comp_tick = time.time()
 
             optimizer.zero_grad()
