@@ -106,7 +106,7 @@ def main(args):
         logging.info('[Valid] @ %05d l2-norm of %5d samples: Avg.: %.4f, 50th: %.3f, 75th: %.3f, 95th: %.3f, 99.5th: %.3f (pixels) \n' % (\
                     (epoch, l2norm_val.shape[0], l2norm_val.mean()) + tuple(np.percentile(l2norm_val, (50, 75, 95, 99.5))) ) )
         
-        torch.save(model.state_dict(), "%s/mdl-it%05d.pth" % (args.exp_name, epoch))
+        torch.save(model, "%s/mdl-it%05d.pth" % (args.exp_name, epoch))
 
     plot_loss(train_loss,'Train')
     logging.info("Trained for %3d epoches, each with %d steps (BS=%d) took %.3f seconds" % (\
