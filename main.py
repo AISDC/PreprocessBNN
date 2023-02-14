@@ -51,7 +51,8 @@ def main(args):
     if torch.cuda.is_available():
         gpus = torch.cuda.device_count()
         if gpus > 1:
-            logging.info("This implementation only makes use of one GPU although %d are visiable" % gpus)
+            model = nn.DataParallel(model)
+            logging.info("using %d gpus!" % gpus)
         model = model.to(device)
 
     criterion = torch.nn.MSELoss()
